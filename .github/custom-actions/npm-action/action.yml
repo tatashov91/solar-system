@@ -3,7 +3,7 @@ description: "Install and caching npm"
 inputs:
   path-of-folder: 
     description: "path of cache folder"
-    require: true
+    required: true
 runs:
   using: "composite"
   steps:
@@ -13,6 +13,6 @@ runs:
           path: ${{ inputs.path-of-folder }}
           key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
 
-    - name: Install Dependencies
-        run: npm install
-        shell: bash
+     - name: Install Dependencies
+         run: npm install
+         shell: bash
