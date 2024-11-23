@@ -39,14 +39,10 @@ jobs:
           with:
             node-version: ${{ matrix.nodejs_version }}
     
-        - name: Cache NPM dependencies
-          uses: actions/cache@v3
+        - name: Composite action
+          uses: ./.github/custom-actions/npm-action/
           with:
-            path: node_modules
-            key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
-
-        - name: Install Dependencies
-          run: npm install
+            path-of-folder: node_modules
     
         - name: Unit Testing
           id: nodejs-unit-testing-step
@@ -69,13 +65,11 @@ jobs:
           with:
             node-version: 18
 
-        - name: Cache NPM dependencies
-          uses: actions/cache@v3
+        - name: Composite action
+          uses: ./.github/custom-actions/npm-action/
           with:
-            path: node_modules
-            key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
-        - name: Install Dependencies
-          run: npm install
+            path-of-folder: node_modules
+            
         - name: Check Code Coverage
           continue-on-error: true
           run: npm run coverage
@@ -105,24 +99,33 @@ jobs:
             context: .
             push: true
             tags: ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
-    dev-deploy:
-      needs: [docker]
-      runs-on: ubuntu-latest
-      steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-      - name: Install Kubectl CLI
-        uses: azure/setup-kubectl@v3
-        with:
-          version: 'v1.26.0'
-      - name: Added k8s config context
-        uses: azure/k8s-set-context@v3
-        with:
-          method: kubeconfig
-          kubeconfig: ${{ secrets.KUBECONFIG }}
-      - name: Fetch k8s details
-        run: |
-          kubectl version --short
-          echo ----------
-          kubectl get nodes
+    # dev-deploy:
+    #   needs: [docker]
+    #   runs-on: ubuntu-latest
+    #   steps:
+    #   - name: Checkout Repository
+    #     uses: actions/checkout@v4
+    #   - name: Install Kubectl CLI
+    #     uses: azure/setup-kubectl@v3
+    #     with:
+    #       version: 'v1.26.0'
+    #   - name: Added k8s config context
+    #     uses: azure/k8s-set-context@v3
+    #     with:
+    #       method: kubeconfig
+    #       kubeconfig: ${{ secrets.KUBECONFIG }}
+    #   - name: Fetch k8s details
+    #     run: |
+    #       kubectl version --short
+    #       echo ----------
+    #       kubectl get nodes
+    #   - name: Replace tokens in manifest files
+    #     uses: cschleiden/replace-tokens@v1
+    #     with:
+    #       tokenPrefix: '_{_'
+    #       tokenSuffix: '_}_'
+    #       files: '["kubernetes/deployment/*.yaml"]'
+    #     env:
+    #       NAMESPACE: ${{ vars.NAMESPACE }}
+    #       REPLICAS: ${{ vars.REPLICAS}}
           
